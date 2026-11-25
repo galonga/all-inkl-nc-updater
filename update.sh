@@ -66,7 +66,9 @@ update_nc_version() {
 	local updater="$NC_BASE/updater/updater.phar"
 	[[ -f "$updater" ]] || fail "Nextcloud updater not found: $updater"
 	logger "- run the Nextcloud updater"
-	php -d "memory_limit=$PHP_MEMORY_LIMIT" "$updater" --no-interaction
+	# The bundled updater may call curl_close(), a no-op deprecated in PHP 8.5.
+	# Suppress deprecations for this process only; keep warnings and errors visible.
+	php -d "memory_limit=$PHP_MEMORY_LIMIT" -d 'error_reporting=E_ALL & ~E_DEPRECATED' "$updater" --no-interaction
 }
 
 update_apps() {
